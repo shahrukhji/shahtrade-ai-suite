@@ -50,7 +50,7 @@ const inputClass = "w-full h-12 rounded-xl px-4 text-sm bg-input border border-b
 
 // Load/save settings from localStorage
 const loadSettings = (key: string, defaults: any) => {
-  try { const s = localStorage.getItem(`st_${key}`); return s ? { ...defaults, ...JSON.parse(s) } : defaults; } catch { return defaults; }
+  try { const s = localStorage.getItem(`st_${key}`); if (!s) return defaults; const parsed = JSON.parse(s); return Array.isArray(defaults) ? (Array.isArray(parsed) ? parsed : defaults) : { ...defaults, ...parsed }; } catch { return defaults; }
 };
 const saveSettings = (key: string, val: any) => localStorage.setItem(`st_${key}`, JSON.stringify(val));
 
