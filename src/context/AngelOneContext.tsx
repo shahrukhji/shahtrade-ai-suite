@@ -3,12 +3,11 @@ import type { AngelOneContextType, AngelOneState } from '@/types/angelOne';
 import type { Holding, Position, Order, Trade } from '@/types/trading';
 import * as api from '@/services/angelOneApi';
 import { isMarketOpen } from '@/utils/marketHours';
-import { sampleHoldings } from '@/utils/sampleData';
 
 const defaultState: AngelOneState = {
   isConnected: false, isLoading: false, isSyncing: false, lastSyncTime: null, error: null,
   userProfile: null, funds: null, holdings: [], positions: [], orders: [], trades: [],
-  apiKey: '', clientId: '', password: '', totp: '', jwtToken: null, refreshToken: null, feedToken: null,
+  apiKey: '', clientId: '', password: '', jwtToken: null, refreshToken: null, feedToken: null,
 };
 
 const AngelOneContext = createContext<AngelOneContextType | null>(null);
@@ -135,24 +134,19 @@ export const AngelOneProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } catch (e: any) {
       console.error('Sync error:', e);
       setState(s => ({ ...s, isSyncing: false, error: e.message }));
-      // If session expired, try falling back to mock data for demo
       if (e.message?.includes('INVALID') || e.message?.includes('SESSION')) {
-        const refreshed = await api.refreshAccessToken();
-        if (!refreshed) {
-          // Fall back to demo mode
-          console.log('Session expired, using demo data');
-        }
+        await api.refreshAccessToken();
       }
     }
   }, []);
 
-  const connect = useCallback(async (apiKey: string, clientId: string, password: string, totp: string) => {
+  const connect = useCallback(async (apiKey: string, clientId: string, password: string) => {
     setState(s => ({ ...s, isLoading: true, error: null }));
     localStorage.setItem('ao_apikey', apiKey);
     localStorage.setItem('ao_client_id', clientId);
 
     try {
-      const session = await api.generateSession(clientId, password, totp);
+      const session = await api.generateSession(clientId, password);
       if (session?.jwtToken) {
         setState(s => ({
           ...s, isConnected: true, isLoading: false,
@@ -167,22 +161,8 @@ export const AngelOneProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
     } catch (e: any) {
       console.error('Connect error:', e);
-      // Fallback: simulate connection for demo
-      setState(s => ({
-        ...s, isConnected: true, isLoading: false,
-        userProfile: { clientcode: clientId || 'DEMO', name: 'Shahrukh', email: 'shah@trade.ai', mobileno: '9876543210', exchanges: ['NSE', 'BSE', 'NFO', 'MCX'], products: ['DELIVERY', 'INTRADAY', 'CARRYFORWARD'], broker: 'Angel One' },
-        funds: { availablecash: 487250.50, availableintradaypayin: 0, availablelimitmargin: 487250.50, collateral: 125000, m2munrealized: 12450, m2mrealized: 8320, utiliseddebits: 112749.50, utilisedspan: 85000, utilisedoptionpremium: 15000, utilisedholdingtrades: 12749.50, utilisedexposure: 0, utilisedturnover: 0, utilisedpayout: 0, net: 600000 },
-        holdings: sampleHoldings as Holding[],
-        positions: [{ symbol: 'RELIANCE', exchange: 'NSE', product: 'INTRADAY' as const, netQty: 10, buyQty: 10, sellQty: 0, avgPrice: 2480, ltp: 2520.75, pnl: 407.50, pnlPercent: 1.64 }],
-        orders: [
-          { orderId: 'ORD001', symbol: 'RELIANCE', exchange: 'NSE', type: 'BUY' as const, qty: 10, price: 2480, status: 'COMPLETE' as const, orderType: 'LIMIT' as const, timestamp: new Date().toISOString() },
-          { orderId: 'ORD002', symbol: 'TCS', exchange: 'NSE', type: 'BUY' as const, qty: 5, price: 3750, status: 'OPEN' as const, orderType: 'LIMIT' as const, timestamp: new Date().toISOString() },
-        ],
-        trades: [{ tradeId: 'TRD001', orderId: 'ORD001', symbol: 'RELIANCE', exchange: 'NSE', type: 'BUY' as const, qty: 10, price: 2480, timestamp: new Date().toISOString() }],
-        lastSyncTime: new Date().toISOString(),
-        apiKey, clientId, jwtToken: 'demo-jwt',
-      }));
-      localStorage.setItem('ao_connected', 'true');
+      setState(s => ({ ...s, isLoading: false, error: e.message }));
+      throw e;
     }
   }, [syncAllData]);
 
@@ -252,7 +232,6 @@ export const AngelOneProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return clearIntervals;
   }, [state.isConnected, syncAllData, refreshFunds]);
 
-  // Debug log
   useEffect(() => {
     console.log('CONTEXT STATE:', { isConnected: state.isConnected, funds: state.funds, holdings: state.holdings.length, positions: state.positions.length });
   }, [state.isConnected, state.funds, state.holdings, state.positions]);
