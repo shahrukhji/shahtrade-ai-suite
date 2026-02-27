@@ -1,7 +1,29 @@
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta';
+
+// Auto-detect best available model
+export async function detectBestModel(apiKey: string): Promise<string> {
+  const cached = localStorage.getItem('gemini_model');
+  if (cached) return cached;
+
+  const res = await fetch(`${GEMINI_BASE}/models?key=${apiKey}`);
+  if (!res.ok) throw new Error('Invalid Gemini API key');
+  const data = await res.json();
+  const models: string[] = (data.models || []).map((m: any) => m.name?.replace('models/', '') || '');
+
+  const preferred = ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-pro'];
+  const best = preferred.find(p => models.some(m => m.includes(p))) || models[0] || 'gemini-1.5-flash';
+  localStorage.setItem('gemini_model', best);
+  return best;
+}
+
+export function getCachedModel(): string | null {
+  return localStorage.getItem('gemini_model');
+}
 
 export async function callGemini(apiKey: string, prompt: string) {
-  const res = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+  const model = localStorage.getItem('gemini_model') || 'gemini-1.5-flash';
+  const url = `${GEMINI_BASE}/models/${model}:generateContent?key=${apiKey}`;
+  const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

@@ -52,14 +52,13 @@ export interface AngelOneState {
   apiKey: string;
   clientId: string;
   password: string;
-  totp: string;
   jwtToken: string | null;
   refreshToken: string | null;
   feedToken: string | null;
 }
 
 export interface AngelOneContextType extends AngelOneState {
-  connect: (apiKey: string, clientId: string, password: string, totp: string) => Promise<void>;
+  connect: (apiKey: string, clientId: string, password: string) => Promise<void>;
   disconnect: () => void;
   syncAllData: () => Promise<void>;
   refreshFunds: () => Promise<void>;

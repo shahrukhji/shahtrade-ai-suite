@@ -14,7 +14,6 @@ import { useSafeMode } from '@/context/SafeModeContext';
 import { useCustomToast } from '@/hooks/useCustomToast';
 import { formatINR, formatTime } from '@/utils/formatters';
 import { ChevronDown, Eye, EyeOff, Clipboard, Info, X, RefreshCw } from 'lucide-react';
-import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from '@/components/ui/input-otp';
 
 // Collapsible section wrapper
 const Section = ({ title, icon, children, defaultOpen = false }: { title: string; icon: string; children: React.ReactNode; defaultOpen?: boolean }) => {
@@ -60,14 +59,13 @@ const saveSettings = (key: string, val: any) => localStorage.setItem(`st_${key}`
 
 const SettingsPage = () => {
   const { isConnected, connect, disconnect, userProfile, funds, lastSyncTime, syncAllData, isSyncing } = useAngelOne();
-  const { apiKey, setApiKey, isConfigured } = useGemini();
+  const { apiKey, setApiKey, isConfigured, detectedModel, detectModel } = useGemini();
   const toast = useCustomToast();
 
   // Connection fields
   const [apiKeyInput, setApiKeyInput] = useState('');
   const [clientId, setClientId] = useState('');
   const [password, setPassword] = useState('');
-  const [totp, setTotp] = useState('');
   const [connecting, setConnecting] = useState(false);
 
   // Gemini
@@ -153,12 +151,12 @@ const SettingsPage = () => {
   useEffect(() => { saveAll(); }, [saveAll]);
 
   const handleConnect = async () => {
-    if (!apiKeyInput || !clientId || !password || !totp) { toast.error('Please fill all fields'); return; }
+    if (!apiKeyInput || !clientId || !password) { toast.error('Please fill all fields'); return; }
     setConnecting(true);
     try {
-      await connect(apiKeyInput, clientId, password, totp);
+      await connect(apiKeyInput, clientId, password);
       toast.success('Connected to Angel One!');
-    } catch { toast.error('Connection failed'); }
+    } catch (e: any) { toast.error(e.message || 'Connection failed'); }
     setConnecting(false);
   };
 
@@ -213,22 +211,6 @@ const SettingsPage = () => {
               <input className={inputClass} placeholder="Client ID" value={clientId} onChange={e => setClientId(e.target.value)} />
             </div>
             <SecureInput placeholder="MPIN" value={password} onChange={setPassword} />
-            <div>
-              <p className="text-xs text-muted-foreground mb-1.5">TOTP (6 digits)</p>
-              <InputOTP maxLength={6} value={totp} onChange={setTotp}>
-                <InputOTPGroup>
-                  <InputOTPSlot index={0} className="h-12 w-12 text-lg font-mono bg-input border-border" />
-                  <InputOTPSlot index={1} className="h-12 w-12 text-lg font-mono bg-input border-border" />
-                  <InputOTPSlot index={2} className="h-12 w-12 text-lg font-mono bg-input border-border" />
-                </InputOTPGroup>
-                <InputOTPSeparator />
-                <InputOTPGroup>
-                  <InputOTPSlot index={3} className="h-12 w-12 text-lg font-mono bg-input border-border" />
-                  <InputOTPSlot index={4} className="h-12 w-12 text-lg font-mono bg-input border-border" />
-                  <InputOTPSlot index={5} className="h-12 w-12 text-lg font-mono bg-input border-border" />
-                </InputOTPGroup>
-              </InputOTP>
-            </div>
             <details className="text-xs text-muted-foreground">
               <summary className="cursor-pointer flex items-center gap-1"><Info size={12} />Where to find these?</summary>
               <p className="mt-1 pl-4">Get API Key from SmartAPI portal → My API → Create App. Client ID is your Angel One login ID.</p>
@@ -248,13 +230,27 @@ const SettingsPage = () => {
           <p className="mt-1 pl-4">Visit makersuite.google.com → Get API Key → Create</p>
         </details>
         <div className="flex gap-2">
-          <button onClick={() => { setApiKey(geminiKey); toast.success('API key saved'); setGeminiStatus(geminiKey ? 'valid' : 'idle'); }} className="flex-1 h-10 rounded-xl bg-ai/20 text-ai text-sm font-bold">Save Key</button>
-          <button onClick={() => { setGeminiStatus(geminiKey ? 'valid' : 'invalid'); toast.info(geminiKey ? 'Key looks valid' : 'No key set'); }} className="flex-1 h-10 rounded-xl border border-ai text-ai text-sm font-bold">Test Key</button>
+          <button onClick={async () => {
+            setApiKey(geminiKey);
+            if (geminiKey) {
+              try {
+                const model = await detectModel();
+                setGeminiStatus('valid');
+                toast.success(`API key saved! Model: ${model}`);
+              } catch {
+                setGeminiStatus('invalid');
+                toast.error('Invalid API key');
+              }
+            } else {
+              setGeminiStatus('idle');
+            }
+          }} className="flex-1 h-10 rounded-xl bg-ai/20 text-ai text-sm font-bold">Save & Detect</button>
         </div>
-        {geminiStatus !== 'idle' && (
-          <p className={`text-xs font-bold ${geminiStatus === 'valid' ? 'text-profit' : 'text-loss'}`}>
-            {geminiStatus === 'valid' ? '✅ Valid' : '❌ Invalid'}
-          </p>
+        {geminiStatus === 'valid' && detectedModel && (
+          <p className="text-xs font-bold text-profit">✅ Model: {detectedModel}</p>
+        )}
+        {geminiStatus === 'invalid' && (
+          <p className="text-xs font-bold text-loss">❌ Invalid API key</p>
         )}
         {isConfigured && <Badge variant="ai">Configured</Badge>}
       </Section>
