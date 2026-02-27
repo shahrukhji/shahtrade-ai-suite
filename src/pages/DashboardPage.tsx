@@ -1,4 +1,5 @@
 import { useAngelOne } from '@/context/AngelOneContext';
+import { useSafeMode } from '@/context/SafeModeContext';
 import GlassCard from '@/components/Common/GlassCard';
 import PnLDisplay from '@/components/Common/PnLDisplay';
 import ShimmerCard from '@/components/Common/ShimmerCard';
@@ -8,12 +9,20 @@ import Badge from '@/components/Common/Badge';
 import ProgressBar from '@/components/Common/ProgressBar';
 import CircularProgress from '@/components/Common/CircularProgress';
 import Disclaimer from '@/components/Common/Disclaimer';
+import SafeModeBanner from '@/components/SafeMode/SafeModeBanner';
+import CapitalProtectionMeter from '@/components/SafeMode/CapitalProtectionMeter';
+import AffordableStocks from '@/components/SafeMode/AffordableStocks';
+import PennyProfitCard from '@/components/SafeMode/PennyProfitCard';
+import GrowthMilestones from '@/components/SafeMode/GrowthMilestones';
+import TipOfTheDay from '@/components/SafeMode/TipOfTheDay';
+import MicroPnLTracker from '@/components/SafeMode/MicroPnLTracker';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, RefreshCw } from 'lucide-react';
 import { useCustomToast } from '@/hooks/useCustomToast';
 
 const DashboardPage = () => {
   const { isConnected, userProfile, funds, holdings, lastSyncTime, syncAllData } = useAngelOne();
+  const { enabled: safeModeEnabled, capital: safeCapital } = useSafeMode();
   const navigate = useNavigate();
   const toast = useCustomToast();
 
@@ -43,6 +52,9 @@ const DashboardPage = () => {
         )}
       </GlassCard>
 
+      {/* Safe Mode Banner */}
+      <SafeModeBanner />
+
       {/* Wallet */}
       {isConnected && (
         funds ? (
@@ -62,6 +74,20 @@ const DashboardPage = () => {
           </GlassCard>
         ) : <ShimmerCard />
       )}
+
+      {/* Capital Protection Meter (Safe Mode) */}
+      <CapitalProtectionMeter />
+
+      {/* Micro P&L Tracker (Safe Mode) */}
+      {safeModeEnabled && <MicroPnLTracker />}
+
+      {/* Penny Profit Recommendation (Safe Mode, low capital) */}
+      {safeModeEnabled && safeCapital <= 5000 && (
+        <PennyProfitCard onStart={() => { navigate('/auto-trade'); toast.info('Starting Penny Profit in Paper Mode'); }} />
+      )}
+
+      {/* Tip of the Day (Safe Mode) */}
+      {safeModeEnabled && <TipOfTheDay />}
 
       {/* Market Indices */}
       <div className="flex gap-2 overflow-x-auto hide-scrollbar -mx-4 px-4 snap-x">
@@ -105,6 +131,12 @@ const DashboardPage = () => {
         </div>
         <Disclaimer />
       </GlassCard>
+
+      {/* Affordable Stocks (Safe Mode) */}
+      {safeModeEnabled && <AffordableStocks onAnalyze={() => toast.info('AI Analysis coming soon')} onBuy={() => toast.info('Paper mode — simulated buy')} />}
+
+      {/* Growth Milestones (Safe Mode) */}
+      {safeModeEnabled && <GrowthMilestones />}
 
       {/* Portfolio Summary */}
       {isConnected && holdings.length > 0 && (
