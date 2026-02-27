@@ -66,6 +66,7 @@ const SettingsPage = () => {
   const [apiKeyInput, setApiKeyInput] = useState('');
   const [clientId, setClientId] = useState('');
   const [password, setPassword] = useState('');
+  const [totp, setTotp] = useState('');
   const [connecting, setConnecting] = useState(false);
 
   // Gemini
@@ -151,10 +152,10 @@ const SettingsPage = () => {
   useEffect(() => { saveAll(); }, [saveAll]);
 
   const handleConnect = async () => {
-    if (!apiKeyInput || !clientId || !password) { toast.error('Please fill all fields'); return; }
+    if (!apiKeyInput || !clientId || !password || !totp) { toast.error('Please fill all fields'); return; }
     setConnecting(true);
     try {
-      await connect(apiKeyInput, clientId, password);
+      await connect(apiKeyInput, clientId, password, totp);
       toast.success('Connected to Angel One!');
     } catch (e: any) { toast.error(e.message || 'Connection failed'); }
     setConnecting(false);
@@ -211,6 +212,18 @@ const SettingsPage = () => {
               <input className={inputClass} placeholder="Client ID" value={clientId} onChange={e => setClientId(e.target.value)} />
             </div>
             <SecureInput placeholder="MPIN" value={password} onChange={setPassword} />
+            <div>
+              <p className="text-xs text-muted-foreground mb-1.5">TOTP (26 characters)</p>
+              <input
+                className="w-full h-12 rounded-xl px-4 text-sm bg-input border border-border focus:border-info focus:outline-none font-mono tracking-widest"
+                placeholder="Enter 26-character TOTP"
+                value={totp}
+                onChange={e => setTotp(e.target.value)}
+                maxLength={26}
+                autoComplete="one-time-code"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">{totp.length}/26 characters</p>
+            </div>
             <details className="text-xs text-muted-foreground">
               <summary className="cursor-pointer flex items-center gap-1"><Info size={12} />Where to find these?</summary>
               <p className="mt-1 pl-4">Get API Key from SmartAPI portal → My API → Create App. Client ID is your Angel One login ID.</p>

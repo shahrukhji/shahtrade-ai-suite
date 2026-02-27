@@ -7,7 +7,7 @@ import { isMarketOpen } from '@/utils/marketHours';
 const defaultState: AngelOneState = {
   isConnected: false, isLoading: false, isSyncing: false, lastSyncTime: null, error: null,
   userProfile: null, funds: null, holdings: [], positions: [], orders: [], trades: [],
-  apiKey: '', clientId: '', password: '', jwtToken: null, refreshToken: null, feedToken: null,
+  apiKey: '', clientId: '', password: '', totp: '', jwtToken: null, refreshToken: null, feedToken: null,
 };
 
 const AngelOneContext = createContext<AngelOneContextType | null>(null);
@@ -140,13 +140,13 @@ export const AngelOneProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, []);
 
-  const connect = useCallback(async (apiKey: string, clientId: string, password: string) => {
+  const connect = useCallback(async (apiKey: string, clientId: string, password: string, totp: string) => {
     setState(s => ({ ...s, isLoading: true, error: null }));
     localStorage.setItem('ao_apikey', apiKey);
     localStorage.setItem('ao_client_id', clientId);
 
     try {
-      const session = await api.generateSession(clientId, password);
+      const session = await api.generateSession(clientId, password, totp);
       if (session?.jwtToken) {
         setState(s => ({
           ...s, isConnected: true, isLoading: false,
