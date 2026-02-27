@@ -1,0 +1,9 @@
+{
+  "name": "ShahTrade AI",
+  "short_name": "ShahTrade",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0e27",
+  "theme_color": "#0a0e27",
+  "description": "AI-Powered Algo Trading Platform"
+}
