@@ -1,25 +1,51 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
+import { ToastProvider } from "@/context/ToastContext";
+import { AngelOneProvider } from "@/context/AngelOneContext";
+import { AutoTradeProvider } from "@/context/AutoTradeContext";
+import { GeminiProvider } from "@/context/GeminiContext";
+import TopHeaderBar from "@/components/Layout/TopHeaderBar";
+import LiveSyncBar from "@/components/Layout/LiveSyncBar";
+import BottomNavBar from "@/components/Layout/BottomNavBar";
+import Watermark from "@/components/Layout/Watermark";
+import ToastContainer from "@/components/Common/ToastContainer";
+import PageContainer from "@/components/Layout/PageContainer";
+import DashboardPage from "@/pages/DashboardPage";
+import FnOPage from "@/pages/FnOPage";
+import AutoTradePage from "@/pages/AutoTradePage";
+import PortfolioPage from "@/pages/PortfolioPage";
+import SettingsPage from "@/pages/SettingsPage";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <ToastProvider>
+        <AngelOneProvider>
+          <AutoTradeProvider>
+            <GeminiProvider>
+              <BrowserRouter>
+                <TopHeaderBar />
+                <LiveSyncBar />
+                <PageContainer>
+                  <Routes>
+                    <Route path="/" element={<DashboardPage />} />
+                    <Route path="/fno" element={<FnOPage />} />
+                    <Route path="/auto-trade" element={<AutoTradePage />} />
+                    <Route path="/portfolio" element={<PortfolioPage />} />
+                    <Route path="/settings" element={<SettingsPage />} />
+                  </Routes>
+                </PageContainer>
+                <Watermark />
+                <BottomNavBar />
+                <ToastContainer />
+              </BrowserRouter>
+            </GeminiProvider>
+          </AutoTradeProvider>
+        </AngelOneProvider>
+      </ToastProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
