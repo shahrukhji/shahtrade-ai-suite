@@ -14,6 +14,7 @@ import { useSafeMode } from '@/context/SafeModeContext';
 import { useCustomToast } from '@/hooks/useCustomToast';
 import { formatINR, formatTime } from '@/utils/formatters';
 import { ChevronDown, Eye, EyeOff, Clipboard, Info, X, RefreshCw } from 'lucide-react';
+import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from '@/components/ui/input-otp';
 
 // Collapsible section wrapper
 const Section = ({ title, icon, children, defaultOpen = false }: { title: string; icon: string; children: React.ReactNode; defaultOpen?: boolean }) => {
@@ -212,8 +213,21 @@ const SettingsPage = () => {
               <input className={inputClass} placeholder="Client ID" value={clientId} onChange={e => setClientId(e.target.value)} />
             </div>
             <SecureInput placeholder="MPIN" value={password} onChange={setPassword} />
-            <div className="relative">
-              <input className={inputClass} placeholder="TOTP (6 digits)" value={totp} onChange={e => setTotp(e.target.value)} maxLength={6} inputMode="numeric" />
+            <div>
+              <p className="text-xs text-muted-foreground mb-1.5">TOTP (6 digits)</p>
+              <InputOTP maxLength={6} value={totp} onChange={setTotp}>
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} className="h-12 w-12 text-lg font-mono bg-input border-border" />
+                  <InputOTPSlot index={1} className="h-12 w-12 text-lg font-mono bg-input border-border" />
+                  <InputOTPSlot index={2} className="h-12 w-12 text-lg font-mono bg-input border-border" />
+                </InputOTPGroup>
+                <InputOTPSeparator />
+                <InputOTPGroup>
+                  <InputOTPSlot index={3} className="h-12 w-12 text-lg font-mono bg-input border-border" />
+                  <InputOTPSlot index={4} className="h-12 w-12 text-lg font-mono bg-input border-border" />
+                  <InputOTPSlot index={5} className="h-12 w-12 text-lg font-mono bg-input border-border" />
+                </InputOTPGroup>
+              </InputOTP>
             </div>
             <details className="text-xs text-muted-foreground">
               <summary className="cursor-pointer flex items-center gap-1"><Info size={12} />Where to find these?</summary>
