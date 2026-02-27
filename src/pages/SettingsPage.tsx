@@ -6,8 +6,11 @@ import PillButton from '@/components/Common/PillButton';
 import Badge from '@/components/Common/Badge';
 import ConfirmModal from '@/components/Common/ConfirmModal';
 import Disclaimer from '@/components/Common/Disclaimer';
+import SafeModeBanner from '@/components/SafeMode/SafeModeBanner';
+import SafeSettings from '@/components/SafeMode/SafeSettings';
 import { useAngelOne } from '@/context/AngelOneContext';
 import { useGemini } from '@/context/GeminiContext';
+import { useSafeMode } from '@/context/SafeModeContext';
 import { useCustomToast } from '@/hooks/useCustomToast';
 import { formatINR, formatTime } from '@/utils/formatters';
 import { ChevronDown, Eye, EyeOff, Clipboard, Info, X, RefreshCw } from 'lucide-react';
@@ -174,6 +177,12 @@ const SettingsPage = () => {
   return (
     <div className="space-y-3">
       <h1 className="text-xl font-bold">⚙️ Settings</h1>
+
+      {/* Safe Mode Banner */}
+      <SafeModeBanner />
+
+      {/* Safe Mode Locked Settings */}
+      <SafeSettings />
 
       {/* 5.1 Account Connection */}
       <Section title="Angel One" icon="🔗" defaultOpen>

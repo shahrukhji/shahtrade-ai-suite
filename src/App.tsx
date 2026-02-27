@@ -6,6 +6,7 @@ import { AngelOneProvider } from "@/context/AngelOneContext";
 import { AutoTradeProvider } from "@/context/AutoTradeContext";
 import { GeminiProvider } from "@/context/GeminiContext";
 import { StrategiesProvider } from "@/context/StrategiesContext";
+import { SafeModeProvider } from "@/context/SafeModeContext";
 import TopHeaderBar from "@/components/Layout/TopHeaderBar";
 import LiveSyncBar from "@/components/Layout/LiveSyncBar";
 import BottomNavBar from "@/components/Layout/BottomNavBar";
@@ -25,28 +26,30 @@ const App = () => (
     <TooltipProvider>
       <ToastProvider>
         <AngelOneProvider>
-          <AutoTradeProvider>
-            <GeminiProvider>
-              <StrategiesProvider>
-                <BrowserRouter>
-                  <TopHeaderBar />
-                  <LiveSyncBar />
-                  <PageContainer>
-                    <Routes>
-                      <Route path="/" element={<DashboardPage />} />
-                      <Route path="/fno" element={<FnOPage />} />
-                      <Route path="/auto-trade" element={<AutoTradePage />} />
-                      <Route path="/portfolio" element={<PortfolioPage />} />
-                      <Route path="/settings" element={<SettingsPage />} />
-                    </Routes>
-                  </PageContainer>
-                  <Watermark />
-                  <BottomNavBar />
-                  <ToastContainer />
-                </BrowserRouter>
-              </StrategiesProvider>
-            </GeminiProvider>
-          </AutoTradeProvider>
+          <SafeModeProvider>
+            <AutoTradeProvider>
+              <GeminiProvider>
+                <StrategiesProvider>
+                  <BrowserRouter>
+                    <TopHeaderBar />
+                    <LiveSyncBar />
+                    <PageContainer>
+                      <Routes>
+                        <Route path="/" element={<DashboardPage />} />
+                        <Route path="/fno" element={<FnOPage />} />
+                        <Route path="/auto-trade" element={<AutoTradePage />} />
+                        <Route path="/portfolio" element={<PortfolioPage />} />
+                        <Route path="/settings" element={<SettingsPage />} />
+                      </Routes>
+                    </PageContainer>
+                    <Watermark />
+                    <BottomNavBar />
+                    <ToastContainer />
+                  </BrowserRouter>
+                </StrategiesProvider>
+              </GeminiProvider>
+            </AutoTradeProvider>
+          </SafeModeProvider>
         </AngelOneProvider>
       </ToastProvider>
     </TooltipProvider>
