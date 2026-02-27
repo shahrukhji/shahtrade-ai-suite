@@ -60,10 +60,10 @@ function parseResponse(res: any) {
 }
 
 // Login with API Key + Client ID + MPIN only (no TOTP)
-export const generateSession = async (clientCode: string, password: string): Promise<any> => {
+export const generateSession = async (clientCode: string, password: string, totp: string): Promise<any> => {
   const res = await apiFetch('/rest/auth/angelbroking/user/v1/loginByPassword', {
     method: 'POST',
-    body: JSON.stringify({ clientcode: clientCode, password }),
+    body: JSON.stringify({ clientcode: clientCode, password, totp }),
   });
   console.log('generateSession response:', res);
   const data = parseResponse(res);
